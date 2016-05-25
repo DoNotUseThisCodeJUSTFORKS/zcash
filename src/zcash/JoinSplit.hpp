@@ -8,6 +8,7 @@
 #include "NoteEncryption.hpp"
 
 #include "uint256.h"
+#include "uint252.h"
 
 #include <boost/array.hpp>
 
@@ -37,7 +38,7 @@ public:
     JSOutput();
     JSOutput(PaymentAddress addr, uint64_t value) : addr(addr), value(value) { }
 
-    Note note(const uint256& phi, const uint256& r, size_t i, const uint256& h_sig) const;
+    Note note(const uint252& phi, const uint256& r, size_t i, const uint256& h_sig) const;
 };
 
 template<size_t NumInputs, size_t NumOutputs>
@@ -58,7 +59,7 @@ public:
     virtual void loadVerifyingKey(std::string path) = 0;
     virtual void saveVerifyingKey(std::string path) = 0;
 
-    virtual std::string prove(
+    virtual boost::array<unsigned char, ZKSNARK_PROOF_SIZE> prove(
         const boost::array<JSInput, NumInputs>& inputs,
         const boost::array<JSOutput, NumOutputs>& outputs,
         boost::array<Note, NumOutputs>& out_notes,
@@ -75,7 +76,7 @@ public:
     ) = 0;
 
     virtual bool verify(
-        const std::string& proof,
+        const boost::array<unsigned char, ZKSNARK_PROOF_SIZE>& proof,
         const uint256& pubKeyHash,
         const uint256& randomSeed,
         const boost::array<uint256, NumInputs>& hmacs,

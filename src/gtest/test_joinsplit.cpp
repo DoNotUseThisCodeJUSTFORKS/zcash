@@ -33,7 +33,7 @@ void test_full_api(ZCJoinSplit* js)
     boost::array<uint256, 2> commitments;
     uint256 rt = tree.root();
     boost::array<ZCNoteEncryption::Ciphertext, 2> ciphertexts;
-    std::string proof;
+    boost::array<unsigned char, ZKSNARK_PROOF_SIZE> proof;
 
     {
         boost::array<JSInput, 2> inputs = {
@@ -257,7 +257,7 @@ TEST(joinsplit, full_api_test)
 
 TEST(joinsplit, note_plaintexts)
 {
-    uint256 a_sk = uint256S("f6da8716682d600f74fc16bd0187faad6a26b4aa4c24d5c055b216d94516847e");
+    uint252 a_sk = uint252(uint256S("f6da8716682d600f74fc16bd0187faad6a26b4aa4c24d5c055b216d94516840e"));
     uint256 a_pk = PRF_addr_a_pk(a_sk);
     uint256 sk_enc = ZCNoteEncryption::generate_privkey(a_sk);
     uint256 pk_enc = ZCNoteEncryption::generate_pubkey(sk_enc);

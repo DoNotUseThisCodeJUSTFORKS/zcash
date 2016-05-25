@@ -126,7 +126,7 @@ public:
     JoinSplitCircuit() {}
 
     bool verify(
-        const std::string& proof,
+        const boost::array<unsigned char, ZKSNARK_PROOF_SIZE>& proof,
         const uint256& pubKeyHash,
         const uint256& randomSeed,
         const boost::array<uint256, NumInputs>& macs,
@@ -142,7 +142,8 @@ public:
 
         r1cs_ppzksnark_proof<ppzksnark_ppT> r1cs_proof;
         std::stringstream ss;
-        ss.str(proof);
+        std::string proof_str(proof.begin(), proof.end());
+        ss.str(proof_str);
         ss >> r1cs_proof;
 
         uint256 h_sig = this->h_sig(randomSeed, nullifiers, pubKeyHash);
@@ -160,7 +161,7 @@ public:
         return r1cs_ppzksnark_verifier_strong_IC<ppzksnark_ppT>(*vk, witness, r1cs_proof);
     }
 
-    std::string prove(
+    boost::array<unsigned char, ZKSNARK_PROOF_SIZE> prove(
         const boost::array<JSInput, NumInputs>& inputs,
         const boost::array<JSOutput, NumOutputs>& outputs,
         boost::array<Note, NumOutputs>& out_notes,
@@ -191,7 +192,7 @@ public:
         uint256 h_sig = this->h_sig(out_randomSeed, out_nullifiers, pubKeyHash);
 
         // Sample phi
-        uint256 phi = random_uint256();
+        uint252 phi = random_uint252();
 
         // Compute notes for outputs
         for (size_t i = 0; i < NumOutputs; i++) {
@@ -266,8 +267,14 @@ public:
 
         std::stringstream ss;
         ss << proof;
+        std::string serialized_proof = ss.str();
 
-        return ss.str();
+        boost::array<unsigned char, ZKSNARK_PROOF_SIZE> result_proof;
+        //std::cout << "proof size in bytes when serialized: " << serialized_proof.size() << std::endl;
+        assert(serialized_proof.size() == ZKSNARK_PROOF_SIZE);
+        memcpy(&result_proof[0], &serialized_proof[0], ZKSNARK_PROOF_SIZE);
+
+        return result_proof;
     }
 };
 
@@ -320,19 +327,19 @@ uint256 JoinSplit<NumInputs, NumOutputs>::h_sig(
     return output;
 }
 
-Note JSOutput::note(const uint256& phi, const uint256& r, size_t i, const uint256& h_sig) const {
+Note JSOutput::note(const uint252& phi, const uint256& r, size_t i, const uint256& h_sig) const {
     uint256 rho = PRF_rho(phi, i, h_sig);
 
     return Note(addr.a_pk, value, rho, r);
 }
 
 JSOutput::JSOutput() : addr(uint256(), uint256()), value(0) {
-    SpendingKey a_sk(random_uint256());
+    SpendingKey a_sk = SpendingKey::random();
     addr = a_sk.address();
 }
 
 JSInput::JSInput() : witness(ZCIncrementalMerkleTree().witness()),
-                     key(random_uint256()) {
+                     key(SpendingKey::random()) {
     note = Note(key.address().a_pk, 0, random_uint256(), random_uint256());
     ZCIncrementalMerkleTree dummy_tree;
     dummy_tree.append(note.cm());

@@ -448,6 +448,7 @@ std::string HelpMessage(HelpMessageMode mode)
 std::string LicenseInfo()
 {
     return FormatParagraph(strprintf(_("Copyright (C) 2009-%i The Bitcoin Core Developers"), COPYRIGHT_YEAR)) + "\n" +
+           FormatParagraph(strprintf(_("Copyright (C) 2015-%i The Zcash Developers"), COPYRIGHT_YEAR)) + "\n" +
            "\n" +
            FormatParagraph(_("This is experimental software.")) + "\n" +
            "\n" +
@@ -602,8 +603,8 @@ static void ZC_LoadParams()
     struct timeval tv_start, tv_end;
     float elapsed;
 
-    boost::filesystem::path pk_path = ZC_GetParamsDir() / "z3-proving.key";
-    boost::filesystem::path vk_path = ZC_GetParamsDir() / "z3-verification.key";
+    boost::filesystem::path pk_path = ZC_GetParamsDir() / "z4-proving.key";
+    boost::filesystem::path vk_path = ZC_GetParamsDir() / "z4-verification.key";
 
     pzcashParams = ZCJoinSplit::Unopened();
 
